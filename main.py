@@ -52,6 +52,8 @@ class PyppeteerScraper:
         new_page = await self.page.waitForXPath(self.NEXT_PAGE_LINK)
         new_page_ev = await self.page.evaluate(self.EVALUATE_HREF_CONVERTER, new_page)
         self.MAIN_URL = new_page_ev
+        print(self.MAIN_URL)
+        self.ALL_AUTO_URL = []
         await self.page.waitForNavigation()
 
     async def scraper(self):
@@ -59,9 +61,11 @@ class PyppeteerScraper:
         self.page = await self.browser.newPage()
         await self.page.goto(url=self.MAIN_URL, options=self.OPTIONS)
         all_car = await self.page.querySelectorAll(self.ALL_CAR_PATH)
+
         for car in all_car:
             cars = await self.page.evaluate(self.EVALUATE_HREF_CONVERTER, car)
             self.ALL_AUTO_URL.append(cars)
+        print(self.ALL_AUTO_URL)
         for car_link in self.ALL_AUTO_URL:
             await self.page.goto(url=car_link, options=self.OPTIONS)
             title = await self.page.querySelector(self.TITLE)
@@ -119,7 +123,9 @@ class PyppeteerScraper:
         await self.pages()
 
     async def main(self):
-        for i in range(3):
+        await self.scraper()
+        new_page = await self.page.waitForXPath(self.NEXT_PAGE_LINK)
+        while new_page is not None:
             await self.scraper()
         await self.browser.close()
 
